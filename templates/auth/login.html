@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold">Welcome Back</h3>
+                    <p class="text-muted">Login to your dashboard</p>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger p-2 small">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label small fw-bold text-uppercase">Email or Username</label>
+                        <input type="text" name="username" autofocus maxlength="254" required id="id_username" 
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                               placeholder="Enter email or username">
+                        {% for error in form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label small fw-bold text-uppercase">Password</label>
+                        <input type="password" name="password" required id="id_password" 
+                               class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                               placeholder="••••••••">
+                        {% for error in form.password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center small">
+                    <p class="text-muted">Forget your password? 
+                        <a href="{% url 'password_reset' %}" class="text-primary text-decoration-none fw-bold">Reset it</a>
+                    </p>
+                    <p class="text-muted">Don't have an account? 
+                        <a href="{% url 'signup' %}" class="text-primary text-decoration-none fw-bold">Sign up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="/" class="text-muted text-decoration-none small">← Back to Homepage</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

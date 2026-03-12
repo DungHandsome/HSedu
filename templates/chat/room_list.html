@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Your Chats</h2>
+    <div class="list-group mt-3">
+        {% for thread in threads %}
+            <a href="{% url 'chat_room' thread.id %}" class="list-group-item list-group-item-action">
+                {% if thread.eclass %}
+                    <strong>Class: {{ thread.eclass.name }}</strong>
+                {% else %}
+                    <strong>Private Chat</strong>
+                {% endif %}
+                <br>
+                <small class="text-muted">Last message: {{ thread.messages.last.text|truncatechars:30 }}</small>
+            </a>
+        {% empty %}
+            <p>No chats available.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

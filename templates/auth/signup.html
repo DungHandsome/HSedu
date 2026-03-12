@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">Join EduStream</h2>
+                <p class="text-muted text-center mb-4">Create your student or teacher account</p>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                        <div class="mb-3" id="div_{{ field.name }}">
+                            <label class="form-label fw-bold">{{ field.label }}</label>
+                            {{ field.errors }}
+                            <input type="{{ field.field.widget.input_type }}" 
+                                   name="{{ field.name }}" 
+                                   class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                   placeholder="Enter {{ field.label }}">
+                            {% if field.help_text %}
+                                <div class="form-text text-muted small">{{ field.help_text|safe }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <p class="mb-0">Already have an account? <a href="" class="text-decoration-none">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Logic to show/hide 'Major' field based on Teacher checkbox
+    const teacherCheck = document.querySelector('input[name="is_teacher"]');
+    const majorDiv = document.getElementById('div_major');
+
+    function toggleMajor() {
+        if (teacherCheck && majorDiv) {
+            majorDiv.style.display = teacherCheck.checked ? 'block' : 'none';
+        }
+    }
+
+    if (teacherCheck) {
+        teacherCheck.classList.add('form-check-input');
+        teacherCheck.addEventListener('change', toggleMajor);
+        toggleMajor(); 
+    }
+</script>
+{% endblock %}

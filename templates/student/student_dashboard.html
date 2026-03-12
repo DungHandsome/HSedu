@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome, {{ user.full_name }}</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h3>My Classes</h3>
+            <div class="list-group">
+                {% for eclass in enrolled_classes %}
+                    <a href="" class="list-group-item list-group-item-action">
+                        {{ eclass.name }}
+                    </a>
+                {% empty %}
+                    <p>No classes assigned.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h3>Recent Announcements</h3>
+            {% for announcement in recent_announcements %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        {{ announcement.title }} - 
+                        <small class="text-muted">{{ announcement.eclass.name }}</small>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ announcement.content|truncatechars:100 }}</p>
+                        <a href="" class="btn btn-sm btn-outline-primary">View Class</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No new announcements.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
