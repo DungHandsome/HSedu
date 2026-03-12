@@ -1,0 +1,1 @@
+# This is my Django project that I use to parrticipate in a coding competition in my province
