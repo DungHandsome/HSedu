@@ -44,15 +44,14 @@ class CustomLoginView(LoginView):
 @login_required
 def dashboard_dispatch(request):
     if request.user.is_teacher:
-        #return redirect('teacher_dashboard')
-        pass
+        return redirect('teacher_dashboard')
     else:
         return redirect('student_dashboard')
 
 @login_required
 def student_dashboard(request):
     if request.user.is_teacher:
-        pass
+        return redirect('teacher_dashboard')
 
     # 1. Get the current user
     student_obj = get_object_or_404(Student, user=request.user)
@@ -71,6 +70,35 @@ def student_dashboard(request):
     
     return render(request, 'student/student_dashboard.html', context)
 
+@login_required
+def teacher_dashboard(request):
+    if not request.user.is_teacher:
+        return redirect('student_dashboard')
+
+    # 1. Get Teacher Profile
+    teacher_profile = get_object_or_404(Teacher, user=request.user)
+
+    # 2. Find the class where they are the "Main Teacher" (Homeroom)
+    # Using the related_name='main_teacher' from EClass model
+    main_class = EClass.objects.filter(main_teacher=teacher_profile).first()
+
+    # 3. Get all classes they teach (Subject Classes)
+    # Using the related_name='teachers' from Teacher.classes field
+    all_taught_classes = teacher_profile.classes.all()
+
+    # 4. Get recent announcements they've posted
+    my_announcements = Announcement.objects.filter(teacher=request.user)[:5]
+
+    context = {
+        'teacher_profile': teacher_profile,
+        'main_class': main_class,
+        'all_taught_classes': all_taught_classes,
+        'my_announcements': my_announcements,
+    }
+
+    return render(request, 'teacher/teacher_dashboard.html', context)
+
+
 # Announcement Upload View (for teachers)
 @login_required
 def create_announcement(request, eclass_id):
@@ -86,7 +114,7 @@ def create_announcement(request, eclass_id):
             announcement.save()
 
             # Manually process the files
-            # 'files' must match the 'name' attribute in your HTML
+            # 'files' must match the 'name' attribute in HTML
             files = request.FILES.getlist('files') 
             for f in files:
                 AnnouncementFile.objects.create(

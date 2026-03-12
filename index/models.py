@@ -103,7 +103,7 @@ class Exercise(models.Model):
 class Question(models.Model):
     type = models.BooleanField(default=False, help_text="True = Multiple Choice, False = Short Answer")
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='questions')
-    questions = models.TextField()
+    description = models.TextField()
     answer = models.CharField(max_length=255)
 
     def __str__(self):
