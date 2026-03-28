@@ -94,6 +94,7 @@ class Teacher(models.Model):
 class Exercise(models.Model):
     eclass = models.ManyToManyField(EClass, related_name='exercises', blank=True)
     title = models.CharField(max_length=255)
+    subject = models.ForeignKey('Subject', on_delete=models.SET_NULL, null=True, blank=True)
     author = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True)
     time_limit = models.IntegerField(help_text="Time limit in minutes", blank=True, null=True, validators=[MinValueValidator(1)])
     description = models.TextField(blank=True, null=True)

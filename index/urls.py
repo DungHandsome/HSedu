@@ -11,6 +11,7 @@ urlpatterns = [
     path('logout', auth_views.LogoutView.as_view(), name='logout'),
     path('chats/', views.chat_room_list, name='chat_room_list'),
     path('chats/<uuid:thread_id>/', views.chat_room, name='chat_room'),
+    path('class/<int:id>/manage/', views.main_class_manage, name='main_class_manage'),
     path('eclass/<int:eclass_id>/create-announcement/', views.create_announcement, name='create_announcement'),
 
 

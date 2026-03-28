@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'teacher_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">{{ eclass.name }} Management</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5">{{ eclass.name }} <small class="text-muted">({{ eclass.school_year }})</small></h1>
+            <p class="lead">{{ eclass.description }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-success">Download Student List</button>
+            <button class="btn btn-primary">New Announcement</button>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Class Roster ({{ students.count }})</h5>
+                </div>
+                <div class="list-group list-group-flush" style="max-height: 500px; overflow-y: auto;">
+                    {% for student in students %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ student.user.full_name|default:student.user.username }}</strong><br>
+                            <small class="text-muted">Attendance: {{ student.attendance }}%</small>
+                        </div>
+                        <a href="#" class="btn btn-sm btn-outline-secondary">View Profile</a>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center">No students enrolled.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Current Exercises</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Subject</th>
+                                    <th>Time Limit</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ex in open_exercises %}
+                                <tr>
+                                    <td>{{ ex.title }}</td>
+                                    <td><span class="badge bg-info text-dark">{{ ex.subject.name }}</span></td>
+                                    <td>{{ ex.time_limit }} min</td>
+                                    <td><a href="#" class="btn btn-sm btn-link">View Results</a></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center">No active exercises.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mb-3">Latest Announcements</h4>
+            {% for ann in announcements %}
+            <div class="card mb-3 border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h6 class="card-title font-weight-bold">{{ ann.title }}</h6>
+                        <small class="text-muted">{{ ann.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="card-text">{{ ann.content|linebreaksbr }}</p>
+                    {% if ann.files.all %}
+                        <div class="mt-2">
+                            {% for file_obj in ann.files.all %}
+                                <a href="{{ file_obj.file.url }}" class="badge badge-light border text-decoration-none">📎 File {{ forloop.counter }}</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center">No announcements have been made yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

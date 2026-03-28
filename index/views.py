@@ -5,7 +5,8 @@ from django.contrib.auth.views import LoginView
 from django.db import transaction
 from django.db.models import Q
 from .forms import SignUpForm, AnnouncementForm
-from .models import Student, Teacher, Thread, EClass, AnnouncementFile, Announcement
+from .models import Student, Teacher, Thread, EClass, AnnouncementFile, Announcement, Exercise
+from django.core.exceptions import PermissionDenied
 
 # Authentication Views
 def signup_view(request):
@@ -97,6 +98,43 @@ def teacher_dashboard(request):
     }
 
     return render(request, 'teacher/teacher_dashboard.html', context)
+
+# Class detail page
+
+@login_required
+def main_class_manage(request, id):
+    # 1. Fetch the class or 404
+    eclass = get_object_or_404(EClass, id = id)
+    
+    if request.user.is_teacher:
+        teacher_profile = request.user.teacher_profile
+        
+        if eclass.main_teacher == teacher_profile:
+            # --- AUTHORIZED: Collect data for the class ---
+            
+            # Get students in this class
+            students = eclass.students.all().select_related('user').order_by('user__full_name')
+            
+            # Get open exercises (ManyToMany)
+            open_exercises = Exercise.objects.filter(eclass=eclass).order_by('-id')
+            
+            # Get announcements with their files (Prefetching files for efficiency)
+            announcements = eclass.announcements.all().prefetch_related('files').order_by('-created_at')
+
+            context = {
+                'eclass': eclass,
+                'students': students,
+                'open_exercises': open_exercises,
+                'announcements': announcements,
+            }
+            return render(request, 'teacher/main_class_detail.html', context)
+        else:
+            # User is a teacher, but NOT the main teacher for THIS class
+            raise PermissionDenied # Or redirect with a message
+    else:
+        # User is likely a student trying to access teacher URLs
+        return redirect('student_dashboard')
+
 
 
 # Announcement Upload View (for teachers)
