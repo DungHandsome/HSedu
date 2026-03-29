@@ -35,7 +35,7 @@
                             <strong>{{ student.user.full_name|default:student.user.username }}</strong><br>
                             <small class="text-muted">Attendance: {{ student.attendance }}%</small>
                         </div>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">View Profile</a>
+                        <a href="{% url 'teacher_student_profile' student.user.id %}" class="btn btn-sm btn-outline-secondary">View Profile</a>
                     </div>
                     {% empty %}
                     <div class="list-group-item text-center">No students enrolled.</div>

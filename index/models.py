@@ -11,7 +11,6 @@ class EClass(models.Model):
     school_year = models.CharField(max_length=9) # e.g., "2023-2024"
     main_teacher = models.OneToOneField('Teacher', on_delete=models.SET_NULL, null=True, related_name='main_teacher')
     subjects = models.ManyToManyField('Subject', related_name='classes', blank=True)
-
     def __str__(self):
         return self.name
 

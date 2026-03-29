@@ -1,12 +1,13 @@
+from django import http
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.db import transaction
 from django.db.models import Q
 from .forms import SignUpForm, AnnouncementForm
-from .models import Student, Teacher, Thread, EClass, AnnouncementFile, Announcement, Exercise
-from django.core.exceptions import PermissionDenied
+from .models import Student, Teacher, Thread, EClass, AnnouncementFile, Announcement, Exercise, GradeRecord, Subject, User
 
 # Authentication Views
 def signup_view(request):
@@ -130,12 +131,75 @@ def main_class_manage(request, id):
             return render(request, 'teacher/main_class_detail.html', context)
         else:
             # User is a teacher, but NOT the main teacher for THIS class
-            raise PermissionDenied # Or redirect with a message
+            return http.HttpResponseForbidden("Bạn không có quyền truy cập vào trang này.")
     else:
         # User is likely a student trying to access teacher URLs
         return redirect('student_dashboard')
 
+@login_required
+def teacher_student_profile(request, id):
+    # 1. Security Check
+    if not request.user.is_teacher:
+        return redirect('student_dashboard')
 
+    # 2. Get the student
+    student_user = get_object_or_404(User, id=id)
+    student = get_object_or_404(Student, user=student_user)
+    subjects = Subject.objects.all()
+
+    # 3. Handle POST actions
+    if request.method == "POST":
+        action = request.POST.get('action')
+
+        #Action: Update Attendance
+        if action == "update_attendance":
+            new_attendance = request.POST.get('attendance')
+            student.attendance = new_attendance
+            student.save()
+            messages.success(request, f"Attendance updated for {student_user.full_name}")
+
+        #Action: Reset Password
+        if action == "reset_password":
+            user = student.user
+            user.set_password("123456789")
+            user.save()
+            messages.warning(request, f"Password for {user.username} reset to '123456789'")
+
+        #Action: Add/Edit Grade
+        if action == "save_grade":
+            grade_id = request.POST.get('grade_id')
+            subject_id = request.POST.get('subject')
+            grade_level = request.POST.get('grade_level')
+            term = request.POST.get('term')
+            score = request.POST.get('score')
+
+            if grade_id:
+                grade = get_object_or_404(GradeRecord, id=grade_id, student=student)
+            else:
+                grade = GradeRecord(student=student)
+
+            grade.subject_id = subject_id
+            grade.grade_level = grade_level
+            grade.term = term
+            grade.score = score
+            grade.save()
+            messages.success(request, "Grade record saved")
+
+        #Action: Delete Grade
+        if action == "delete_grade":
+            grade_id = request.POST.get('grade_id')
+            GradeRecord.objects.filter(id=grade_id, student=student).delete()
+            messages.info(request, "Grade record deleted")
+
+        return redirect('teacher_student_profile', id=id)
+
+    context = {
+        'student_user': student_user,
+        'student': student,
+        'subjects': subjects,
+        'grades': student.grades.all().order_by('-grade_level', '-term'),
+    }
+    return render(request, 'teacher/student_profile.html', context)
 
 # Announcement Upload View (for teachers)
 @login_required

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    {% if student_user.profile_picture %}
+                        <img src="{{ student_user.profile_picture.url }}" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary rounded-circle d-inline-block mb-3" style="width: 150px; height: 150px;"></div>
+                    {% endif %}
+                    <h4>{{ student_user.full_name }}</h4>
+                    <p class="text-muted">@{{ student_user.username }}</p>
+
+                    <form method="post" onsubmit="return confirm('Reset password to 123456789?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reset_password">
+                        <button class="btn btn-outline-danger btn-sm">Reset Password</button>
+                    </form>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Email:</strong> {{ student_user.email }}</li>
+                    <li class="list-group-item"><strong>Phone:</strong> {{ student_user.phone_number }}</li>
+                    <li class="list-group-item"><strong>DOB:</strong> {{ student_user.date_of_birth }}</li>
+                    <li class="list-group-item"><strong>Gender:</strong> {{ student_user.get_gender_display }}</li>
+                    <li class="list-group-item"><strong>Address:</strong> {{ student_user.address }}</li>
+                </ul>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>Attendance</h5>
+                    <form method="post" class="d-flex">
+                        {% csrf_token %}
+                        <!-- I just found this that instead of putting the action in the form, I can put it as a hidden input -->
+                        <input type="hidden" name="action" value="update_attendance">
+                        <input type="number" name="attendance" class="form-control me-2" value="{{ student.attendance }}">
+                        <button class="btn btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between">
+                    <h5 class="mb-0">Grade Records</h5>
+                    <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#gradeModal">Add Grade</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Grade</th>
+                                <th>Term</th>
+                                <th>Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in grades %}
+                            <tr>
+                                <td>{{ grade.subject.name }}</td>
+                                <td>{{ grade.grade_level }}</td>
+                                <td>{{ grade.term }}</td>
+                                <td><span class="badge bg-success">{{ grade.score }}</span></td>
+                                <td>
+                                    <form method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_grade">
+                                        <input type="hidden" name="grade_id" value="{{ grade.id }}">
+                                        <button class="btn btn-sm btn-link text-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="gradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" class="modal-content">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save_grade">
+            <div class="modal-header"><h5>Add Grade</h5></div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>Subject</label>
+                    <select name="subject" class="form-select">
+                        {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Grade Level</label>
+                        <select name="grade_level" class="form-select">
+                            <option value="10">10th Grade</option>
+                            <option value="11">11th Grade</option>
+                            <option value="12">12th Grade</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Term</label>
+                        <select name="term" class="form-select">
+                            <option value="1">Term 1</option>
+                            <option value="2">Term 2</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label>Score (0.0 - 10.0)</label>
+                    <input type="number" step="0.1" name="score" class="form-control" min="0" max="10" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save Grade</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
